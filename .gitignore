@@ -3,3 +3,5 @@ data/raw/
 __pycache__/
 *.pyc
 .env
+開發流程 暫定.md
+setup_verify.log

@@ -26,21 +26,17 @@ RUN python -m pip install --upgrade pip
 RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 \
     --index-url https://download.pytorch.org/whl/cu121
 
-# Install core dependencies
+# Install Unsloth first (brings in compatible transformers, trl, peft, accelerate)
+RUN pip install "unsloth[cu121-torch230] @ git+https://github.com/unslothai/unsloth.git"
+
+# Install remaining packages not covered by Unsloth
 RUN pip install \
-    transformers==4.44.2 \
-    datasets==2.21.0 \
-    accelerate==0.33.0 \
-    peft==0.12.0 \
-    trl==0.10.1 \
-    bitsandbytes==0.43.3 \
-    huggingface_hub==0.24.6 \
-    wandb==0.17.8 \
+    datasets \
+    bitsandbytes \
+    huggingface_hub \
+    wandb \
     scipy \
     sentencepiece \
     protobuf
-
-# Install Unsloth for CUDA 12.1 with PyTorch 2.3
-RUN pip install "unsloth[cu121-torch230] @ git+https://github.com/unslothai/unsloth.git"
 
 WORKDIR /workspace
