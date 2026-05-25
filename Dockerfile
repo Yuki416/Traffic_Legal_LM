@@ -1,42 +1,29 @@
-FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:13.0.0-cudnn9-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV CUDA_HOME=/usr/local/cuda
 
-# System dependencies
 RUN apt-get update && apt-get install -y \
-    python3.11 \
-    python3.11-dev \
-    python3.11-distutils \
-    python3-pip \
-    git \
-    wget \
-    curl \
+    python3.11 python3.11-dev python3.11-distutils \
+    python3-pip git curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set python3.11 as default
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
+    && python -m pip install --upgrade pip
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
-
-# Install PyTorch for CUDA 12.1
-RUN pip install torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 \
-    --index-url https://download.pytorch.org/whl/cu121
-
-# Install Unsloth first (brings in compatible transformers, trl, peft, accelerate)
-RUN pip install "unsloth[cu121-torch230] @ git+https://github.com/unslothai/unsloth.git"
-
-# Install remaining packages not covered by Unsloth
+# torch 2.12.0+cu130 satisfies unsloth_zoo's torch>=2.4.0,<2.13.0 requirement natively.
+# torchvision 0.27.0 matches torch 2.12.0's requirement of torchvision>=0.27.0.
 RUN pip install \
-    datasets \
-    bitsandbytes \
-    huggingface_hub \
-    wandb \
-    scipy \
-    sentencepiece \
-    protobuf
+    torch==2.12.0 torchvision==0.27.0 \
+    --index-url https://download.pytorch.org/whl/cu130
+
+# No version constraints needed — torch 2.12.0 naturally satisfies all unsloth dependencies.
+RUN pip install \
+    unsloth_zoo \
+    "unsloth @ git+https://github.com/unslothai/unsloth.git" \
+    datasets bitsandbytes huggingface_hub \
+    wandb scipy sentencepiece protobuf
 
 WORKDIR /workspace
