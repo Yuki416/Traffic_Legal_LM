@@ -1,4 +1,4 @@
-FROM nvidia/cuda:13.0.0-cudnn9-devel-ubuntu22.04
+FROM nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -13,11 +13,12 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
     && python -m pip install --upgrade pip
 
-# torch 2.12.0+cu130 satisfies unsloth_zoo's torch>=2.4.0,<2.13.0 requirement natively.
-# torchvision 0.27.0 matches torch 2.12.0's requirement of torchvision>=0.27.0.
+# torch 2.12.0+cu126: latest cu126 wheel, satisfies unsloth_zoo's torch>=2.4.0,<2.13.0.
+# torchvision 0.27.0 satisfies torch 2.12.0's torchvision>=0.27.0 requirement.
+# Base image is cuda:12.6 (available on Docker Hub); Driver 580 on host is backward-compatible.
 RUN pip install \
     torch==2.12.0 torchvision==0.27.0 \
-    --index-url https://download.pytorch.org/whl/cu130
+    --index-url https://download.pytorch.org/whl/cu126
 
 # No version constraints needed — torch 2.12.0 naturally satisfies all unsloth dependencies.
 RUN pip install \
